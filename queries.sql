@@ -21,21 +21,40 @@ SELECT * FROM animals;
 
 BEGIN;
 DELETE FROM animals;
+-- Verify that the records were deleted
 SELECT * FROM animals;
+-- Rollback the transaction
 ROLLBACK;
+-- Verify that all records in the animals table still exist
 SELECT * FROM animals;
 
-SELECT COUNT(*) FROM animals;
 
-SELECT COUNT(*) FROM animals WHERE escape_attempts = 0;
+BEGIN;
+DELETE FROM animals WHERE birthdate > '2022-01-01';
+SAVEPOINT update_weights;
+UPDATE animals SET weight = weight * -1;
+-- Verify that the change was made
+SELECT * FROM animals;
+-- Rollback to the savepoint
+ROLLBACK TO update_weights;
+-- Update all animals' weights that are negative to be their weight multiplied by -1
+UPDATE animals SET weight = weight * -1 WHERE weight < 0;
+COMMIT;
+-- Verify that the change was made and persists after commit
+SELECT * FROM animals;
 
-SELECT AVG(weight_kg) FROM animals;
 
-SELECT neutered, AVG(escape_attempts) FROM animals GROUP BY neutered;
+SELECT COUNT(*) FROM animals; -- How many animals are there?
 
-SELECT species, MIN(weight_kg), MAX(weight_kg) FROM animals GROUP BY species;
+SELECT COUNT(*) FROM animals WHERE escape_attempts = 0; -- How many animals have never tried to escape?
 
+SELECT AVG(weight_kg) FROM animals; -- What is the average weight of animals?
 
+SELECT neutered, AVG(escape_attempts) FROM animals GROUP BY neutered; -- Who escapes the most, neutered or not neutered animals?
+
+SELECT species, MIN(weight_kg), MAX(weight_kg) FROM animals GROUP BY species; -- What is the minimum and maximum weight of each type of animal?
+
+-- What is the average number of escape attempts per animal type of those born between 1990 and 2000?
 SELECT species, AVG(escape_attempts) AS avg_escapes
 FROM animals
 WHERE date_of_birth BETWEEN '1990-01-01' AND '2000-12-31'
